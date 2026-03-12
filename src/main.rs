@@ -1,3 +1,6 @@
+mod vec3;
+use vec3::Vec3;
+
 fn main() {
     let image_height: u32 = 256;
     let image_width: u32 = 256;
