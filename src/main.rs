@@ -1,9 +1,13 @@
+use std::io;
+
+use crate::{color::write_color, vec3::Vec3};
+
+mod color;
 mod vec3;
-use vec3::Vec3;
 
 fn main() {
-    let image_height: u32 = 256;
-    let image_width: u32 = 256;
+    let image_height: i32 = 256;
+    let image_width: i32 = 256;
 
     print!("P3\n{image_width} {image_height}\n255\n");
 
@@ -16,11 +20,8 @@ fn main() {
             let g = j as f64/ (image_height-1) as f64;
             let b = 0.0;
 
-            let ir = (255.999 * r) as u32;
-            let ig = (255.999 * g) as u32;
-            let ib = (255.999 * b) as u32;
-
-            println!("{ir} {ig} {ib}");
+            let pixel_color = Vec3::new(r,g,b);
+            write_color(&mut io::stdout(), pixel_color);
         }
     }
     eprintln!("\rDone!                                              ");
