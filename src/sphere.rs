@@ -11,7 +11,7 @@ pub struct Sphere
 
 impl Sphere
 {
-    fn new(center: Point3, radius: f64) -> Sphere
+    pub fn new(center: Point3, radius: f64) -> Sphere
     {
         Sphere
         {
