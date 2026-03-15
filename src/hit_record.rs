@@ -1,6 +1,6 @@
 use crate::interval::Interval;
 use crate::Point3;
-use crate::Ray;
+use crate::ray::Ray;
 use crate::vec3::{Vec3, dot};
 
 #[derive(Clone, Default)]
@@ -27,8 +27,6 @@ impl HitRecord
         self.normal = if self.front_face { *outward_normal } else { -*outward_normal }
     }
 }
-
-
 
 pub trait Hittable
 {
