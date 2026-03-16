@@ -4,7 +4,7 @@ use crate::hit_record::{Hittable, HitRecord};
 use crate::Point3;
 use crate::interval::Interval;
 use crate::rtweekend::{INFINITY, random_double};
-use crate::vec3::{Vec3, unit_vector};
+use crate::vec3::{Vec3, random_on_hemisphere, random_unit_vector, unit_vector};
 
 use std::io;
 
@@ -14,6 +14,7 @@ pub struct Camera
     pub aspect_ratio: f64,
     pub image_width: i32,
     pub samples_per_pixel: i32,
+    pub max_depth: i32,
     pixel_sample_scale: f64,        // Color scale factor for a sum of pixel samples
     image_height: i32,
     camera_center: Point3,
@@ -40,17 +41,11 @@ impl Camera
                 for _ in 0..self.samples_per_pixel
                 {
                     let r = self.get_ray(i, j);
-                    pixel_color += Self::ray_color(&r, world);
+                    pixel_color += Self::ray_color(&r, self.max_depth, world);
                 }
 
                 
                 write_color(&mut io::stdout(), self.pixel_sample_scale * pixel_color);
-
-                // let pixel_center: Vec3 = self.pixel00_loc + (i as f64 * self.pixel_delta_u) + (j as f64 * self.pixel_delta_v);
-                // let ray_direction = pixel_center - self.camera_center;
-                // let r: Ray = Ray::new(self.camera_center, ray_direction); 
-                
-                // let pixel_color = Self::ray_color(&r, world);
             }
         }
         eprintln!("\rDone!                                              ");
@@ -84,12 +79,19 @@ impl Camera
         self.pixel00_loc = viewport_upper_left + 0.5 * (self.pixel_delta_u + self.pixel_delta_v);
     }
 
-    fn ray_color(r: &Ray, world: &dyn Hittable) -> Color
+    fn ray_color(r: &Ray, depth: i32, world: &dyn Hittable) -> Color
     {
-        let mut rec= HitRecord::new();
-        if world.hit(r, &Interval::new(0.0, INFINITY), &mut rec)
+        if depth <= 0
         {
-            return 0.5 * (rec.normal + Color::new(1.0,1.0,1.0));
+            return Color::new(0.0, 0.0, 0.0);
+        }
+
+        let mut rec= HitRecord::new();
+        if world.hit(r, &Interval::new(0.001, INFINITY), &mut rec)
+        {
+            let direction = rec.normal + random_unit_vector();
+            let reflectance_percent: f64 = 0.5;
+            return reflectance_percent * Self::ray_color(&Ray::new(rec.p, direction), depth - 1, world);
         }
 
         let unit_direction: Vec3 = unit_vector(r.direction());
