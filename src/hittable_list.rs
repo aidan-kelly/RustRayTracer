@@ -1,4 +1,7 @@
+use std::sync::Arc;
+
 use crate::interval::Interval;
+use crate::material::NoMaterial;
 use crate::ray::Ray;
 use crate::hit_record::{Hittable, HitRecord};
 
@@ -25,7 +28,7 @@ impl Hittable for HittableList
 {
     fn hit(&self, r: &Ray, ray_t: &Interval, rec: &mut HitRecord) -> bool
     {
-        let mut temp_rec = HitRecord::new();   
+        let mut temp_rec = HitRecord::new(Arc::new(NoMaterial));   
         let mut hit_anything = false;
         let mut closest_so_far = ray_t.max;
 

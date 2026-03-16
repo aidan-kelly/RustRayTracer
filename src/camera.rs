@@ -1,3 +1,4 @@
+use crate::material::NoMaterial;
 use crate::ray::Ray;
 use crate::color::{Color, write_color};
 use crate::hit_record::{Hittable, HitRecord};
@@ -7,6 +8,7 @@ use crate::rtweekend::{INFINITY, random_double};
 use crate::vec3::{Vec3, random_on_hemisphere, random_unit_vector, unit_vector};
 
 use std::io;
+use std::sync::Arc;
 
 #[derive(Default)]
 pub struct Camera
@@ -86,12 +88,24 @@ impl Camera
             return Color::new(0.0, 0.0, 0.0);
         }
 
-        let mut rec= HitRecord::new();
+        let mut rec= HitRecord::new(Arc::new(NoMaterial));
         if world.hit(r, &Interval::new(0.001, INFINITY), &mut rec)
         {
-            let direction = rec.normal + random_unit_vector();
-            let reflectance_percent: f64 = 0.5;
-            return reflectance_percent * Self::ray_color(&Ray::new(rec.p, direction), depth - 1, world);
+            let mut scattered = Ray::new(Vec3::random(), Vec3::random());
+            let mut attenuation = Color::new(0.0, 0.0, 0.0);
+
+            if rec.material.scatter(r, &rec, &mut attenuation, &mut scattered)
+            {
+                return attenuation * Self::ray_color(&scattered, depth-1, world);
+            }
+            else
+            {
+                return Color::new(0.0, 0.0, 0.0);   
+            }
+
+            //let direction = rec.normal + random_unit_vector();
+            //let reflectance_percent: f64 = 0.5;
+            //return reflectance_percent * Self::ray_color(&Ray::new(rec.p, direction), depth - 1, world);
         }
 
         let unit_direction: Vec3 = unit_vector(r.direction());
